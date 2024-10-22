@@ -16,7 +16,7 @@ const listingRouter=require('./routes/listing.js')
 const userRouter=require("./routes/user.js")
 const reviewRouter=require('./routes/review.js')
 const ejsMate=require("ejs-mate")
-
+const MongoStore = require('connect-mongo');
 const flash=require("connect-flash")
 
 const methodOverride=require("method-override")
@@ -34,9 +34,9 @@ const User=require("./models/user.js")
 
 
 
+const dbUrl =process.env.ATLASDB_URL;
 
-
-const MONGO_URL = "mongodb://127.0.0.1:27017/wander";
+//const MONGO_URL = "mongodb://127.0.0.1:27017/wander";
 
 main()
   .then(() => {
@@ -47,7 +47,7 @@ main()
   });
 
 async function main() {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dbUrl);
   }
 
   app.set("view engine","ejs");
@@ -59,6 +59,19 @@ async function main() {
   
   app.use(express.urlencoded({extended:true}))
   app.use(methodOverride("_method"));
+
+
+  const store = MongoStore.create({
+    mongoUrl:dbUrl,
+    crypto: {
+        secret : process.env.SECRET,
+    },
+    touchAfter : 24 *3600,
+    
+});
+store.on("error",() => {
+    console.log("ERROR in mongo session store",err);
+});
   
 
 
